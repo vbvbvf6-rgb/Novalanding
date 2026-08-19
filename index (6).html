@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nova — мессенджер, который пишут в открытую</title>
+<meta name="description" content="Nova — лёгкий мессенджер в активной разработке. Здесь честно показано, что уже работает и что появится в следующих обновлениях.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+@property --a{ syntax:'<angle>'; initial-value:0deg; inherits:false; }
+:root{
+  --void:#0A0C16; --void-soft:#12162A; --void-card:#161A30;
+  --line:rgba(243,241,255,0.09); --stardust:#F3F1FF; --dim:#9A9BB8;
+  --violet:#7C6CFF; --pink:#FF5FA8; --amber:#FFB84D; --cyan:#4DE1D1;
+  --nova-gradient: conic-gradient(from 180deg, var(--violet), var(--pink), var(--amber), var(--cyan), var(--violet));
+  --radius:18px;
+}
+*{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+body{ margin:0; background:var(--void); color:var(--stardust); font-family:'Inter', system-ui, sans-serif; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+h1,h2,h3,.display{ font-family:'Space Grotesk','Inter',sans-serif; font-weight:600; letter-spacing:-0.02em; margin:0; }
+.mono{ font-family:'JetBrains Mono', monospace; }
+a{ color:inherit; text-decoration:none; }
+img{ max-width:100%; display:block; }
+::selection{ background:var(--violet); color:#fff; }
+.wrap{ max-width:1180px; margin:0 auto; padding:0 24px; }
+body::before{
+  content:""; position:fixed; inset:0; z-index:-2;
+  background:
+    radial-gradient(1.5px 1.5px at 10% 20%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1.5px 1.5px at 80% 10%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 60% 70%, rgba(255,255,255,0.35), transparent),
+    radial-gradient(1.5px 1.5px at 30% 85%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 90% 60%, rgba(255,255,255,0.3), transparent),
+    radial-gradient(1.5px 1.5px at 45% 40%, rgba(255,255,255,0.35), transparent),
+    radial-gradient(1px 1px at 15% 55%, rgba(255,255,255,0.3), transparent);
+  background-repeat:no-repeat; background-size:100% 100%; opacity:0.6;
+}
+#progress-bar{ position:fixed; top:0; left:0; height:3px; width:0%; background:var(--nova-gradient); background-size:300% 100%; animation:hue 6s linear infinite; z-index:100; transition:width .1s linear; }
+header{ position:fixed; top:0; left:0; right:0; z-index:50; background:rgba(10,12,22,0.72); backdrop-filter:blur(14px) saturate(140%); border-bottom:1px solid var(--line); }
+nav.wrap{ display:flex; align-items:center; justify-content:space-between; height:72px; }
+.logo{ display:flex; align-items:center; gap:10px; font-size:1.25rem; font-weight:700; }
+.logo-dot{ width:14px; height:14px; border-radius:50%; background:var(--nova-gradient); animation:spin 6s linear infinite; flex-shrink:0; box-shadow:0 0 16px rgba(124,108,255,0.6); }
+.nav-links{ display:flex; gap:32px; font-size:0.94rem; color:var(--dim); }
+.nav-links a{ transition:color .2s ease; white-space:nowrap; }
+.nav-links a:hover{ color:var(--stardust); }
+.btn{ display:inline-flex; align-items:center; gap:8px; padding:11px 22px; border-radius:999px; font-size:0.92rem; font-weight:600; border:1px solid transparent; cursor:pointer; transition:transform .25s ease, box-shadow .25s ease, background .25s ease, border-color .25s ease; white-space:nowrap; }
+.btn-primary{ background:var(--stardust); color:var(--void); }
+.btn-primary:hover{ box-shadow:0 10px 30px rgba(243,241,255,0.15); transform:translateY(-1px); }
+.btn-ghost{ border-color:var(--line); color:var(--stardust); }
+.btn-ghost:hover{ border-color:var(--stardust); }
+.btn-sm{ padding:9px 16px; font-size:0.85rem; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+.hero{ position:relative; min-height:92svh; display:flex; align-items:center; padding:140px 0 80px; }
+.hero-inner{ position:relative; z-index:1; max-width:760px; margin:0 auto; text-align:center; }
+.eyebrow{ display:inline-flex; align-items:center; gap:8px; padding:7px 16px; border:1px solid var(--line); border-radius:999px; font-family:'JetBrains Mono', monospace; font-size:0.78rem; color:var(--cyan); margin-bottom:28px; background:rgba(77,225,209,0.06); }
+.pulse-dot{ width:6px; height:6px; border-radius:50%; background:var(--cyan); animation:pulse 1.8s ease-in-out infinite; }
+@keyframes pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(77,225,209,0.5); } 50%{ box-shadow:0 0 0 6px rgba(77,225,209,0); } }
+.hero h1{ font-size:clamp(2.4rem, 6.5vw, 4.6rem); line-height:1.05; }
+.hero h1 .grad{ background:var(--nova-gradient); -webkit-background-clip:text; background-clip:text; color:transparent; background-size:300% 300%; animation:hue 8s ease infinite; }
+@keyframes hue{ 0%{ background-position:0% 50%; } 50%{ background-position:100% 50%; } 100%{ background-position:0% 50%; } }
+.hero p{ margin:24px auto 0; max-width:560px; font-size:1.06rem; line-height:1.65; color:var(--dim); }
+.hero-actions{ display:flex; gap:14px; justify-content:center; margin-top:36px; flex-wrap:wrap; }
+.hero-note{ margin-top:22px; font-size:0.8rem; color:var(--dim); font-family:'JetBrains Mono', monospace; }
+.ticker{ border-top:1px solid var(--line); border-bottom:1px solid var(--line); background:var(--void-soft); overflow:hidden; padding:18px 0; }
+.ticker-track{ display:flex; width:max-content; animation:ticker 32s linear infinite; }
+.ticker-item{ display:flex; align-items:center; gap:12px; font-family:'JetBrains Mono', monospace; font-size:0.85rem; color:var(--dim); padding:0 28px; white-space:nowrap; }
+.ticker-item b{ color:var(--stardust); font-weight:500; }
+.ticker-dot{ width:5px; height:5px; border-radius:50%; background:var(--violet); }
+@keyframes ticker{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
+.ticker:hover .ticker-track{ animation-play-state:paused; }
+.highlights{ display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; }
+.hl{ background:var(--void-soft); padding:30px 22px; text-align:center; }
+.hl .hl-dot{ width:10px; height:10px; border-radius:50%; margin:0 auto 14px; box-shadow:0 0 14px currentColor; }
+.hl .hl-title{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:1.02rem; }
+.hl .hl-sub{ margin-top:6px; font-size:0.8rem; color:var(--dim); line-height:1.4; }
+.updates{ margin-top:56px; background:var(--void-card); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; }
+.updates-bar{ display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--line); }
+.updates-bar span.dot{ width:10px; height:10px; border-radius:50%; background:var(--line); flex-shrink:0; }
+.updates-bar .uname{ margin-left:8px; font-family:'JetBrains Mono', monospace; font-size:0.75rem; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.updates-body{ padding:22px 24px; font-family:'JetBrains Mono', monospace; font-size:0.85rem; line-height:1.9; color:var(--cyan); min-height:150px; }
+.updates-body div{ white-space:normal; word-break:break-word; }
+.updates-body .muted{ color:var(--dim); }
+.updates-body .caret{ display:inline-block; width:8px; height:1em; background:var(--cyan); vertical-align:text-bottom; animation:blink 1s step-end infinite; margin-left:2px; }
+@keyframes blink{ 50%{ opacity:0; } }
+.reveal{ opacity:0; transform:translateY(24px); transition:opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1); }
+.reveal.in{ opacity:1; transform:translateY(0); }
+section{ position:relative; padding:110px 0; }
+.section-head{ max-width:620px; margin:0 auto 60px; text-align:center; }
+.kicker{ font-family:'JetBrains Mono', monospace; font-size:0.78rem; color:var(--pink); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:14px; display:block; }
+.section-head h2{ font-size:clamp(1.8rem, 4vw, 2.5rem); }
+.section-head p{ color:var(--dim); margin-top:16px; line-height:1.6; font-size:1.02rem; }
+.grid-features{ display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; }
+.feature{ background:var(--void-soft); padding:34px 28px; transition:background .3s ease, transform .3s ease; position:relative; }
+.feature::before{ content:""; position:absolute; inset:0; padding:1px; border-radius:inherit; background:conic-gradient(from var(--a,0deg), var(--violet), var(--pink), var(--amber), var(--cyan), var(--violet)); -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; opacity:0; transition:opacity .35s ease; animation:spinvar 5s linear infinite; pointer-events:none; }
+@keyframes spinvar{ to{ --a:360deg; } }
+.feature:hover::before{ opacity:1; }
+.feature:hover{ background:var(--void-card); transform:translateY(-2px); }
+.feature .icon{ width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; }
+.feature .icon svg{ width:19px; height:19px; }
+.feature h3{ font-size:1.05rem; margin-bottom:10px; font-weight:600; }
+.feature p{ color:var(--dim); font-size:0.92rem; line-height:1.55; margin:0; }
+.i1{ background:rgba(124,108,255,0.15); color:var(--violet); }
+.i2{ background:rgba(255,95,168,0.15); color:var(--pink); }
+.i3{ background:rgba(255,184,77,0.15); color:var(--amber); }
+.i4{ background:rgba(77,225,209,0.15); color:var(--cyan); }
+.i5{ background:rgba(124,108,255,0.15); color:var(--violet); }
+.i6{ background:rgba(255,95,168,0.15); color:var(--pink); }
+.preview{ display:grid; grid-template-columns:0.9fr 1.1fr; gap:60px; align-items:center; }
+.preview-copy p{ color:var(--dim); line-height:1.7; margin-top:16px; font-size:1.02rem; }
+.preview-copy ul{ list-style:none; padding:0; margin:26px 0 0; display:flex; flex-direction:column; gap:14px; }
+.preview-copy li{ display:flex; align-items:flex-start; gap:12px; color:var(--stardust); font-size:0.96rem; }
+.check{ flex-shrink:0; width:20px; height:20px; border-radius:50%; background:rgba(77,225,209,0.15); color:var(--cyan); display:flex; align-items:center; justify-content:center; font-size:0.7rem; margin-top:2px; }
+.phone{ position:relative; width:280px; margin:0 auto; border-radius:36px; padding:14px; background:linear-gradient(160deg,#1b2040,#0d0f1c); border:1px solid var(--line); box-shadow:0 40px 80px -20px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.02); }
+.phone-screen{ background:var(--void); border-radius:24px; height:520px; overflow:hidden; display:flex; flex-direction:column; position:relative; }
+.phone-bar{ display:flex; align-items:center; gap:10px; padding:16px 16px 12px; border-bottom:1px solid var(--line); }
+.phone-avatar{ width:32px; height:32px; border-radius:50%; background:var(--nova-gradient); animation:spin 10s linear infinite; }
+.phone-bar .name{ font-size:0.86rem; font-weight:600; }
+.phone-bar .status{ font-size:0.7rem; color:var(--cyan); }
+.phone-msgs{ flex:1; padding:16px; display:flex; flex-direction:column; gap:10px; justify-content:flex-end; }
+.bubble{ max-width:75%; padding:10px 14px; border-radius:16px; font-size:0.82rem; line-height:1.4; opacity:0; transform:translateY(10px); animation:pop 0.5s ease forwards; }
+.bubble.in{ align-self:flex-start; background:var(--void-card); border:1px solid var(--line); border-bottom-left-radius:4px; }
+.bubble.out{ align-self:flex-end; background:linear-gradient(135deg, var(--violet), var(--pink)); color:#fff; border-bottom-right-radius:4px; }
+.bubble:nth-child(1){ animation-delay:0.3s; }
+.bubble:nth-child(2){ animation-delay:0.9s; }
+.bubble:nth-child(3){ animation-delay:1.5s; }
+.bubble:nth-child(4){ animation-delay:2.1s; }
+@keyframes pop{ to{ opacity:1; transform:translateY(0); } }
+.typing{ display:flex; gap:4px; align-self:flex-start; background:var(--void-card); border:1px solid var(--line); padding:12px 14px; border-radius:16px; border-bottom-left-radius:4px; opacity:0; animation:pop 0.5s ease forwards; animation-delay:2.6s; }
+.typing span{ width:6px; height:6px; border-radius:50%; background:var(--dim); animation:bounce 1.2s ease-in-out infinite; }
+.typing span:nth-child(2){ animation-delay:0.15s; }
+.typing span:nth-child(3){ animation-delay:0.3s; }
+@keyframes bounce{ 0%,60%,100%{ transform:translateY(0); opacity:0.4; } 30%{ transform:translateY(-4px); opacity:1; } }
+.roadmap-cols{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+.rcol{ background:var(--void-soft); border:1px solid var(--line); border-radius:var(--radius); padding:26px; }
+.rcol .tag{ display:inline-flex; align-items:center; gap:7px; font-family:'JetBrains Mono', monospace; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:18px; }
+.tag-dot{ width:7px; height:7px; border-radius:50%; }
+.rcol ul{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px; }
+.rcol li{ font-size:0.92rem; color:var(--dim); padding-left:16px; position:relative; }
+.rcol li::before{ content:"—"; position:absolute; left:0; color:var(--line); }
+.faq{ max-width:760px; margin:0 auto; display:flex; flex-direction:column; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; }
+.faq details{ background:var(--void-soft); }
+.faq summary{ list-style:none; cursor:pointer; padding:22px 26px; font-weight:500; font-size:0.98rem; display:flex; justify-content:space-between; align-items:center; gap:16px; }
+.faq summary::-webkit-details-marker{ display:none; }
+.faq summary::after{ content:"+"; font-family:'JetBrains Mono', monospace; color:var(--dim); font-size:1.1rem; flex-shrink:0; transition:transform .25s ease; }
+.faq details[open] summary::after{ transform:rotate(45deg); }
+.faq details[open] summary{ color:var(--cyan); }
+.faq p{ margin:0; padding:0 26px 24px; color:var(--dim); font-size:0.92rem; line-height:1.6; }
+.cta{ text-align:center; padding:90px 24px; border-radius:28px; margin:0 24px; background:radial-gradient(circle at 50% 0%, rgba(124,108,255,0.18), transparent 60%), var(--void-soft); border:1px solid var(--line); max-width:1132px; margin-inline:auto; }
+.cta h2{ font-size:clamp(1.9rem, 4.5vw, 2.6rem); }
+.cta p{ color:var(--dim); margin:18px auto 0; max-width:460px; }
+.cta .hero-actions{ margin-top:32px; }
+footer{ padding:56px 0 36px; border-top:1px solid var(--line); margin-top:60px; }
+.footer-row{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px; }
+.footer-links{ display:flex; gap:26px; font-size:0.88rem; color:var(--dim); }
+.footer-links a:hover{ color:var(--stardust); }
+.footer-meta{ font-size:0.8rem; color:var(--dim); margin-top:26px; font-family:'JetBrains Mono', monospace; }
+@media (max-width:900px){
+  .grid-features{ grid-template-columns:1fr 1fr; }
+  .preview{ grid-template-columns:1fr; gap:44px; }
+  .preview .phone{ order:-1; }
+  .roadmap-cols{ grid-template-columns:1fr; }
+  .highlights{ grid-template-columns:1fr 1fr; }
+}
+@media (max-width:640px){
+  .nav-links{ display:none; }
+  .grid-features{ grid-template-columns:1fr; }
+  section{ padding:76px 0; }
+  .hero{ padding:120px 0 60px; }
+  .cta{ margin:0 16px; padding:64px 20px; }
+  .ticker-item{ padding:0 18px; font-size:0.78rem; }
+  .updates-body{ padding:18px; font-size:0.78rem; }
+}
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; }
+}
+</style>
+</head>
+<body>
+<div id="progress-bar"></div>
+
+<header>
+<nav class="wrap">
+<div class="logo"><span class="logo-dot"></span>Nova</div>
+<div class="nav-links">
+<a href="#features">Возможности</a>
+<a href="#preview">Интерфейс</a>
+<a href="#roadmap">Дорожная карта</a>
+<a href="#faq">Вопросы</a>
+</div>
+<a class="btn btn-primary btn-sm js-messenger-link" href="https://aura-messenger-lhhy.onrender.com" target="_blank" rel="noopener">Открыть Nova</a>
+</nav>
+</header>
+
+<main>
+
+<section class="hero">
+<div class="hero-inner">
+<span class="eyebrow"><span class="pulse-dot"></span>в разработке · обновления выходят регулярно</span>
+<h1>Общайся <span class="grad">без лишнего шума</span></h1>
+<p>Nova — лёгкий мессенджер, который постепенно обрастает функциями. Ниже — что уже работает по-настоящему, а что появится в следующих обновлениях.</p>
+<div class="hero-actions">
+<a class="btn btn-primary js-messenger-link" href="https://aura-messenger-lhhy.onrender.com" target="_blank" rel="noopener">Открыть Nova →</a>
+<a class="btn btn-ghost" href="#features">Что уже умеет →</a>
+</div>
+<p class="hero-note">Доступна как сайт в браузере, так и в виде нативного приложения. Регистрация занимает меньше минуты.</p>
+</div>
+</section>
+
+<div class="ticker" aria-hidden="true">
+<div class="ticker-track">
+<span class="ticker-item"><span class="ticker-dot"></span><b>Nova</b> — быстрый мессенджер</span>
+<span class="ticker-item"><span class="ticker-dot"></span>групповые чаты</span>
+<span class="ticker-item"><span class="ticker-dot"></span>работает в браузере</span>
+<span class="ticker-item"><span class="ticker-dot"></span>активная разработка</span>
+<span class="ticker-item"><span class="ticker-dot"></span>обновления каждую неделю</span>
+<span class="ticker-item"><span class="ticker-dot"></span><b>Nova</b> — быстрый мессенджер</span>
+<span class="ticker-item"><span class="ticker-dot"></span>групповые чаты</span>
+<span class="ticker-item"><span class="ticker-dot"></span>работает в браузере</span>
+<span class="ticker-item"><span class="ticker-dot"></span>активная разработка</span>
+<span class="ticker-item"><span class="ticker-dot"></span>обновления каждую неделю</span>
+</div>
+</div>
+
+<section id="features">
+<div class="wrap">
+<div class="section-head reveal">
+<span class="kicker">Что уже внутри</span>
+<h2>Базовые вещи сделаны так, чтобы не мешать</h2>
+<p>Nova не пытается быть «всем сразу». Сначала — стабильный обмен сообщениями, и только потом — всё остальное.</p>
+</div>
+<div class="grid-features reveal">
+<div class="feature">
+<div class="icon i1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7Z"/></svg></div>
+<h3>Доставка без задержек</h3>
+<p>Сообщение появляется у собеседника практически сразу — соединение держится постоянно, а не опрашивается раз в несколько секунд.</p>
+</div>
+<div class="feature">
+<div class="icon i2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+<h3>Личные и групповые чаты</h3>
+<p>Один и тот же интерфейс одинаково хорошо работает и для диалога вдвоём, и для беседы с командой из десятка человек.</p>
+</div>
+<div class="feature">
+<div class="icon i3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="14" height="10" rx="1.5"/><path d="M8 20h4"/><path d="M6 14v6"/><rect x="17" y="9" width="6" height="11" rx="1.2"/></svg></div>
+<h3>Адаптивная вёрстка</h3>
+<p>Разметка перестраивается под ширину экрана: на телефоне — колонка чатов на весь экран, на десктопе — список и переписка рядом.</p>
+</div>
+<div class="feature">
+<div class="icon i4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>
+<h3>Файлы и изображения</h3>
+<p>Можно отправить фото или документ прямо в чат — без промежуточной загрузки на сторонний хостинг.</p>
+</div>
+<div class="feature">
+<div class="icon i5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg></div>
+<h3>Сквозное шифрование</h3>
+<p>Переписка защищена сквозным шифрованием — прочитать сообщения может только отправитель и получатель.</p>
+</div>
+<div class="feature">
+<div class="icon i6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></div>
+<h3>Регулярные обновления</h3>
+<p>Проект развивается постепенно, изменения выходят небольшими порциями, но без долгих пауз.</p>
+</div>
+</div>
+</div>
+</section>
+
+<section id="stats-section">
+<div class="wrap">
+<div class="section-head reveal">
+<span class="kicker">Почему Nova</span>
+<h2>Сделано просто и по делу</h2>
+<p>Без лишних обещаний — вот что действительно отличает Nova на практике.</p>
+</div>
+<div class="highlights reveal">
+<div class="hl"><div class="hl-dot" style="background:var(--violet);color:var(--violet);"></div><div class="hl-title">Без установки</div><div class="hl-sub">открывается в браузере за секунды</div></div>
+<div class="hl"><div class="hl-dot" style="background:var(--pink);color:var(--pink);"></div><div class="hl-title">Просто устроен</div><div class="hl-sub">никакого нагромождения меню и настроек</div></div>
+<div class="hl"><div class="hl-dot" style="background:var(--amber);color:var(--amber);"></div><div class="hl-title">Активно развивается</div><div class="hl-sub">новые функции добавляются регулярно</div></div>
+<div class="hl"><div class="hl-dot" style="background:var(--cyan);color:var(--cyan);"></div><div class="hl-title">Лёгкий вес</div><div class="hl-sub">быстро грузится даже на медленном интернете</div></div>
+</div>
+<div class="updates reveal">
+<div class="updates-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="uname">nova — последние обновления</span></div>
+<div class="updates-body" id="updatesBody"></div>
+</div>
+</div>
+</section>
+
+<section id="preview">
+<div class="wrap">
+<div class="preview">
+<div class="preview-copy reveal">
+<span class="kicker">Интерфейс</span>
+<h2>Чат, который не отвлекает от разговора</h2>
+<p>Минимум декоративных элементов, максимум места для переписки. Тёмная тема по умолчанию, без ярких вспышек и лишней анимации в самом чате.</p>
+<ul>
+<li><span class="check">✓</span> Индикатор набора текста в реальном времени</li>
+<li><span class="check">✓</span> Статусы доставки и прочтения</li>
+<li><span class="check">✓</span> Плавные переходы между чатами без перезагрузки страницы</li>
+</ul>
+</div>
+<div class="phone reveal">
+<div class="phone-screen">
+<div class="phone-bar">
+<div class="phone-avatar"></div>
+<div><div class="name">Nova</div><div class="status">в сети</div></div>
+</div>
+<div class="phone-msgs">
+<div class="bubble in">Привет! Уже пробовал новую тему оформления?</div>
+<div class="bubble out">Да, выглядит огненно 🔥</div>
+<div class="bubble in">В следующем обновлении будут звонки</div>
+<div class="bubble out">Жду не дождусь</div>
+<div class="typing"><span></span><span></span><span></span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="roadmap">
+<div class="wrap">
+<div class="section-head reveal">
+<span class="kicker">Дорожная карта</span>
+<h2>Что появится в следующих обновлениях</h2>
+<p>Три уровня приоритета — от того, что выйдет со дня на день, до того, что пока только в планах.</p>
+</div>
+<div class="roadmap-cols reveal">
+<div class="rcol">
+<span class="tag" style="color:var(--cyan);"><span class="tag-dot" style="background:var(--cyan);"></span>Скоро</span>
+<ul>
+<li>Голосовые и видеозвонки</li>
+<li>Реакции на сообщения</li>
+<li>Выбор светлой и тёмной темы</li>
+</ul>
+</div>
+<div class="rcol">
+<span class="tag" style="color:var(--pink);"><span class="tag-dot" style="background:var(--pink);"></span>В разработке</span>
+<ul>
+<li>Голосовые сообщения</li>
+<li>Свои стикер-паки и эмодзи</li>
+<li>Улучшенный поиск по чатам</li>
+</ul>
+</div>
+<div class="rcol">
+<span class="tag" style="color:var(--amber);"><span class="tag-dot" style="background:var(--amber);"></span>В планах</span>
+<ul>
+<li>Открытое API для ботов</li>
+<li>Каналы и сообщества</li>
+<li>Резервное копирование переписки</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+
+<section id="faq">
+<div class="wrap">
+<div class="section-head reveal">
+<span class="kicker">Вопросы</span>
+<h2>Коротко о частом</h2>
+</div>
+<div class="faq reveal">
+<details>
+<summary>Nova уже можно использовать как основной мессенджер?</summary>
+<p>Да, базовые чаты, файлы и сквозное шифрование работают стабильно.</p>
+</details>
+<details>
+<summary>Нужно ли устанавливать приложение?</summary>
+<p>Нет, это необязательно — Nova доступна и как сайт в браузере, и как нативное приложение. Можно пользоваться любым способом или обоими сразу.</p>
+</details>
+<details>
+<summary>Как часто выходят обновления?</summary>
+<p>Регулярно, но неравномерно — иногда несколько изменений за неделю, иногда пауза чуть дольше. Крупные обновления обычно анонсируются заранее.</p>
+</details>
+<details>
+<summary>Данные защищены сквозным шифрованием?</summary>
+<p>Да, сквозное шифрование переписки уже реализовано и работает — прочитать сообщения может только отправитель и получатель.</p>
+</details>
+<details>
+<summary>Можно ли предложить идею или сообщить о проблеме?</summary>
+<p>Да, обратная связь напрямую влияет на то, что попадает в ближайшие обновления — особенно если речь о конкретном неудобстве в интерфейсе.</p>
+</details>
+</div>
+</div>
+</section>
+
+<section>
+<div class="wrap">
+<div class="cta reveal">
+<h2>Nova уже готова к разговору</h2>
+<p>Заходите, пробуйте и следите за обновлениями — проект растёт вместе со своим сообществом.</p>
+<div class="hero-actions">
+<a class="btn btn-primary js-messenger-link" href="https://aura-messenger-lhhy.onrender.com" target="_blank" rel="noopener">Открыть Nova →</a>
+</div>
+</div>
+</div>
+</section>
+
+</main>
+
+<footer>
+<div class="wrap">
+<div class="footer-row">
+<div class="logo"><span class="logo-dot"></span>Nova</div>
+<div class="footer-links">
+<a class="js-messenger-link" href="https://aura-messenger-lhhy.onrender.com" target="_blank" rel="noopener">Открыть приложение</a>
+<a href="#roadmap">Дорожная карта</a>
+<a href="#faq">Вопросы</a>
+</div>
+</div>
+<div class="footer-meta mono">© 2026 Nova — мессенджер в активной разработке.</div>
+</div>
+</footer>
+
+<script>
+const MESSENGER_URL = "https://aura-messenger-lhhy.onrender.com";
+document.querySelectorAll('.js-messenger-link').forEach(function(el){ el.href = MESSENGER_URL; });
+
+const io = new IntersectionObserver(function(entries){
+  entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+}, { threshold: 0.15 });
+document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+
+const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isTouch = window.matchMedia('(hover: none)').matches;
+
+const progressBar = document.getElementById('progress-bar');
+window.addEventListener('scroll', function(){
+  const h = document.documentElement;
+  const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+  progressBar.style.width = scrolled + '%';
+}, { passive: true });
+
+if (!isTouch && !prefersReduced) {
+  document.querySelectorAll('.feature').forEach(function(card){
+    card.addEventListener('mousemove', function(e){
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width;
+      const py = (e.clientY - r.top) / r.height;
+      const rx = (0.5 - py) * 6;
+      const ry = (px - 0.5) * 6;
+      card.style.transform = 'perspective(700px) rotateX(' + rx + 'deg) rotateY(' + ry + 'deg) translateY(-2px)';
+      card.style.setProperty('--a', (px * 360) + 'deg');
+    });
+    card.addEventListener('mouseleave', function(){ card.style.transform = ''; });
+  });
+}
+
+const updates = [
+  "Улучшена скорость доставки сообщений",
+  "Добавлена базовая отправка файлов",
+  "Индикатор набора текста в реальном времени",
+  "Исправлена вёрстка на узких экранах",
+  "Ускорена загрузка интерфейса"
+];
+const updatesBody = document.getElementById('updatesBody');
+const updatesIO = new IntersectionObserver(function(entries){
+  entries.forEach(function(entry){
+    if (!entry.isIntersecting) return;
+    updatesIO.unobserve(entry.target);
+    if (prefersReduced) {
+      updatesBody.innerHTML = updates.map(function(u){ return '<div><span class="muted">— </span>' + u + '</div>'; }).join('');
+      return;
+    }
+    let i = 0;
+    function typeLine(){
+      if (i >= updates.length) return;
+      const text = updates[i];
+      const line = document.createElement('div');
+      const prefix = document.createElement('span');
+      prefix.className = 'muted';
+      prefix.textContent = '— ';
+      line.appendChild(prefix);
+      const msgSpan = document.createElement('span');
+      const caret = document.createElement('span');
+      caret.className = 'caret';
+      line.appendChild(msgSpan);
+      line.appendChild(caret);
+      updatesBody.appendChild(line);
+      let j = 0;
+      const chars = text.split('');
+      const iv = setInterval(function(){
+        msgSpan.textContent += chars[j] || '';
+        j++;
+        if (j >= chars.length) {
+          clearInterval(iv);
+          caret.remove();
+          i++;
+          setTimeout(typeLine, 260);
+        }
+      }, 18);
+    }
+    typeLine();
+  });
+}, { threshold: 0.4 });
+updatesIO.observe(document.querySelector('.updates'));
+</script>
+</body>
+</html>
